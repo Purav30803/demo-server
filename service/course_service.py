@@ -8,11 +8,13 @@ import string
 
 def create_course(db: Session, course: CourseCreate):
 
-    # Check if a course with the same name already exists
+    if not course.courseName:
+        raise HTTPException(status_code=400, detail="Course name is required")
+
     existing_course = db.query(Course).filter(Course.course_name == course.courseName).first()
     if existing_course:
         raise HTTPException(status_code=400, detail="Course already exists")
-    # random 10 characters as ID
+
     def generate_random_id(length=10):
         return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
@@ -21,9 +23,13 @@ def create_course(db: Session, course: CourseCreate):
         course_name=course.courseName
     )
 
-    db.add(db_course)
-    db.commit()
-    db.refresh(db_course)
+    try:
+        db.add(db_course)
+        db.commit()
+        db.refresh(db_course)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error creating course")
 
     return JSONResponse(
         status_code=201,
@@ -46,50 +52,20 @@ def get_courses(db: Session, searchTerm: str = None):
         raise HTTPException(status_code=404, detail="No courses found")
     return courses
 
-
-# def remove_student(db: Session, student_id: str):
-#     student = db.query(Student).filter(Student.id == student_id).first()
-#     if not student:
-#         raise HTTPException(status_code=404, detail="Student not found")
-
-#     db.delete(student)
-#     db.commit()
-
-#     return JSONResponse(
-#         status_code=200,
-#         content={
-#             "message": "Student deleted successfully"
-#         }
-#     )
-    # return students
     
 def remove_course(db: Session, course_id: str):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    
-    db.delete(course)
-    db.commit()
-
+    try:
+        db.delete(course)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error deleting course")
     return JSONResponse(
         status_code=200,
         content={
             "message": "Course deleted successfully"
         }
     )
-
-
-# def remove_student(db: Session, student_id: str):
-#     student = db.query(Student).filter(Student.id == student_id).first()
-#     if not student:
-#         raise HTTPException(status_code=404, detail="Student not found")
-    
-#     db.delete(student)
-#     db.commit()
-
-#     return JSONResponse(
-#         status_code=200,
-#         content={
-#             "message": "Student deleted successfully"
-#         }
-#     )
