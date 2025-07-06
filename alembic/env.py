@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 # Interpret the target_metadata here.
 from config.database import Base  # Update with your actual models location
 from models.student_model import Student 
+from models.course_model import Course
+from models.result_model import Result
 
 # Update with your actual models location
 target_metadata = Base.metadata

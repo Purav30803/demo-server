@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from config.database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from controller import student_controller ,course_controller
+from controller import student_controller ,course_controller, result_controller, stats_controller
 # from middleware.auth_middleware import CustomMiddleware
 # Initialize the database
 Base.metadata.create_all(bind=engine)
@@ -12,7 +12,7 @@ app = FastAPI()
 # Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update with your frontend URL
+    allow_origins=["*"],  # Update with your fronte nd URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,6 +39,8 @@ def read_root():
 # Register routers
 app.include_router(student_controller.student_router, prefix="/api/students", tags=["students"])
 app.include_router(course_controller.course_router, prefix="/api/courses", tags=["courses"])
+app.include_router(result_controller.result_router, prefix="/api/results", tags=["results"])
+app.include_router(stats_controller.stats_router, prefix="/api/stats", tags=["stats"])
 
 
 @app.on_event("startup")
